@@ -151,6 +151,8 @@ Open the preview window with **⊞ PREVIEW** while Roblox is running.
 
 If you want to **pull the current IP list out of the `BlockIP` rule** into a `.txt` file to edit and re-import, run the following PowerShell command as Administrator:
 
+> **Note:** The commands below use `"BlockIP"` as the rule name — this is the default name the tool creates. If you renamed your firewall rule, replace `"BlockIP"` in the commands with your actual rule name. You can check the exact name in Windows Defender Firewall → Outbound Rules.
+
 ```powershell
 $rule = Get-NetFirewallRule -DisplayName "BlockIP" -ErrorAction SilentlyContinue
 if ($rule) {
