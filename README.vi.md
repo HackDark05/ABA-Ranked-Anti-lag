@@ -4,7 +4,7 @@
 
 > Công cụ Windows dành cho người chơi **ABA (Anime Battle Arena)** — tự động chặn server EU/JP/lag trong Ranked, giữ lobby theo khu vực.
 
-Viết bằng C# WPF. Không AutoHotkey, không script ngoài. Chỉ một file `.exe`.
+
 
 ---
 
