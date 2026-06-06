@@ -1,0 +1,344 @@
+<Window x:Class="RegionBlocker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Region Blocker"
+        Height="740" Width="540"
+        MinHeight="700" MinWidth="500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Background="#0A0A0F"
+        Foreground="White"
+        FontFamily="Consolas">
+
+    <Window.Resources>
+
+        <!-- Base button -->
+        <Style x:Key="BaseBtn" TargetType="Button">
+            <Setter Property="FontFamily"       Value="Consolas"/>
+            <Setter Property="FontSize"         Value="11"/>
+            <Setter Property="FontWeight"       Value="Bold"/>
+            <Setter Property="Cursor"           Value="Hand"/>
+            <Setter Property="BorderThickness"  Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.80"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.35"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NeutralBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#1A1A2E"/>
+            <Setter Property="BorderBrush" Value="#3A3A5C"/>
+            <Setter Property="Foreground"  Value="#C0C0E0"/>
+            <Setter Property="Padding"     Value="10 0"/>
+        </Style>
+
+        <Style x:Key="GreenBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#0D2E0D"/>
+            <Setter Property="BorderBrush" Value="#2A6A2A"/>
+            <Setter Property="Foreground"  Value="#66FF66"/>
+            <Setter Property="Padding"     Value="10 0"/>
+        </Style>
+
+        <Style x:Key="RedBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#2E0D0D"/>
+            <Setter Property="BorderBrush" Value="#6A2A2A"/>
+            <Setter Property="Foreground"  Value="#FF6666"/>
+            <Setter Property="Padding"     Value="10 0"/>
+        </Style>
+
+        <Style x:Key="BlueBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#0D0D2E"/>
+            <Setter Property="BorderBrush" Value="#2A2A6A"/>
+            <Setter Property="Foreground"  Value="#6666FF"/>
+            <Setter Property="Padding"     Value="10 0"/>
+        </Style>
+
+        <Style x:Key="BigMonitorBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <!-- ListBox -->
+        <Style x:Key="DarkList" TargetType="ListBox">
+            <Setter Property="Background"                              Value="#0C0C16"/>
+            <Setter Property="BorderBrush"                             Value="#252540"/>
+            <Setter Property="BorderThickness"                         Value="1"/>
+            <Setter Property="FontFamily"                              Value="Consolas"/>
+            <Setter Property="FontSize"                                Value="11"/>
+            <Setter Property="Foreground"                              Value="#B0B0D0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Padding"                                 Value="2"/>
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding"  Value="8 4"/>
+            <Setter Property="Foreground" Value="#B0B0D0"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#1A1A3E"/>
+                    <Setter Property="Foreground"  Value="#AAAAFF"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#12122A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- TextBox -->
+        <Style x:Key="DarkInput" TargetType="TextBox">
+            <Setter Property="Background"   Value="#0C0C16"/>
+            <Setter Property="Foreground"   Value="#C0C0E0"/>
+            <Setter Property="BorderBrush"  Value="#252540"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"      Value="8 0"/>
+            <Setter Property="FontFamily"   Value="Consolas"/>
+            <Setter Property="FontSize"     Value="12"/>
+            <Setter Property="CaretBrush"   Value="#6666FF"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Section border -->
+        <Style x:Key="SectionBorder" TargetType="Border">
+            <Setter Property="Background"       Value="#0C0C16"/>
+            <Setter Property="BorderBrush"      Value="#1E1E3A"/>
+            <Setter Property="BorderThickness"  Value="1"/>
+            <Setter Property="CornerRadius"     Value="4"/>
+            <Setter Property="Padding"          Value="12 10"/>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- header          -->
+            <RowDefinition Height="Auto"/>   <!-- status strip    -->
+            <RowDefinition Height="Auto"/>   <!-- monitor section -->
+            <RowDefinition Height="Auto"/>   <!-- firewall btns   -->
+            <RowDefinition Height="*"/>      <!-- IP list         -->
+            <RowDefinition Height="Auto"/>   <!-- log             -->
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Grid Grid.Row="0" Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="REGION BLOCKER" FontSize="20" FontWeight="Bold" Foreground="#7777EE"/>
+                <TextBlock Text="Firewall Manager  +  Roblox Monitor" FontSize="9" Foreground="#333355" Margin="1 1 0 0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <TextBlock x:Name="txtAdminBadge" Text="[ADMIN]" FontSize="9"
+                           Foreground="#33AA33" FontWeight="Bold" HorizontalAlignment="Right"/>
+                <TextBlock x:Name="txtVersion" Text="v2.0" FontSize="9"
+                           Foreground="#2A2A4A" HorizontalAlignment="Right"/>
+                <TextBlock Text="by Goldskin_Collector" FontSize="9"
+                           Foreground="#4A4A7A" FontStyle="Italic" HorizontalAlignment="Right"
+                           Margin="0 2 0 0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- === STATUS STRIP === -->
+        <Border Grid.Row="1" Style="{StaticResource SectionBorder}" Margin="0 0 0 8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="RULE STATUS" FontSize="8" Foreground="#333355"/>
+                    <TextBlock x:Name="txtRuleStatus" Text="-" FontSize="13"
+                               FontWeight="Bold" Foreground="#FFAA00" Margin="0 2 0 0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="ROBLOX" FontSize="8" Foreground="#333355"/>
+                    <TextBlock x:Name="txtRobloxState" Text="-" FontSize="13"
+                               FontWeight="Bold" Foreground="#555577" Margin="0 2 0 0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="SCREEN" FontSize="8" Foreground="#333355"/>
+                    <TextBlock x:Name="txtScreenState" Text="-" FontSize="13"
+                               FontWeight="Bold" Foreground="#555577" Margin="0 2 0 0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="TRIGGERED" FontSize="8" Foreground="#333355"/>
+                    <TextBlock x:Name="txtTriggerCount" Text="0x" FontSize="13"
+                               FontWeight="Bold" Foreground="#8888FF" Margin="0 2 0 0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- === MONITOR SECTION === -->
+        <Border Grid.Row="2" Style="{StaticResource SectionBorder}" Margin="0 0 0 8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Monitor controls -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnStartMonitor" Grid.Column="0"
+                            Content="> START MONITOR"
+                            Style="{StaticResource GreenBtn}" Height="34" Margin="0 0 4 0"
+                            Click="BtnStartMonitor_Click"/>
+
+                    <Button x:Name="btnStopMonitor" Grid.Column="1"
+                            Content="|| STOP MONITOR"
+                            Style="{StaticResource RedBtn}" Height="34" Margin="4 0 4 0"
+                            IsEnabled="False"
+                            Click="BtnStopMonitor_Click"/>
+
+                    <Button x:Name="btnResetTrigger" Grid.Column="2"
+                            Content="~ RESET TRIGGER"
+                            Style="{StaticResource NeutralBtn}" Height="34" Margin="4 0 4 0"
+                            Click="BtnResetTrigger_Click"/>
+
+                    <Button x:Name="btnPreview" Grid.Column="3"
+                            Content="⊞ PREVIEW"
+                            Style="{StaticResource BlueBtn}" Height="34" Margin="4 0 0 0"
+                            Click="BtnPreview_Click"/>
+                </Grid>
+
+                <!-- Pixel sample dots -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 8 0 0"
+                            HorizontalAlignment="Left">
+                    <TextBlock Text="PIXELS:" FontSize="8" Foreground="#333355"
+                               VerticalAlignment="Center" Margin="0 0 6 0"/>
+                    <Border x:Name="dot1" Width="14" Height="14" CornerRadius="7"
+                            Background="#111122" BorderBrush="#222244" BorderThickness="1" Margin="2 0"/>
+                    <Border x:Name="dot2" Width="14" Height="14" CornerRadius="7"
+                            Background="#111122" BorderBrush="#222244" BorderThickness="1" Margin="2 0"/>
+                    <Border x:Name="dot3" Width="14" Height="14" CornerRadius="7"
+                            Background="#111122" BorderBrush="#222244" BorderThickness="1" Margin="2 0"/>
+                    <Border x:Name="dot4" Width="14" Height="14" CornerRadius="7"
+                            Background="#111122" BorderBrush="#222244" BorderThickness="1" Margin="2 0"/>
+                    <Border x:Name="dot5" Width="14" Height="14" CornerRadius="7"
+                            Background="#111122" BorderBrush="#222244" BorderThickness="1" Margin="2 0"/>
+                    <TextBlock x:Name="txtBlackCount" Text="" FontSize="8"
+                               Foreground="#333355" VerticalAlignment="Center" Margin="8 0 0 0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- === FIREWALL CONTROLS === -->
+        <Grid Grid.Row="3" Margin="0 0 0 8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="btnEnableBlock" Grid.Column="0"
+                    Content="[ON] ENABLE BLOCK"
+                    Style="{StaticResource GreenBtn}" Height="32" Margin="0 0 4 0"
+                    Click="BtnEnableBlock_Click"/>
+
+            <Button x:Name="btnDisableBlock" Grid.Column="1"
+                    Content="[OFF] DISABLE BLOCK"
+                    Style="{StaticResource RedBtn}" Height="32" Margin="4 0 4 0"
+                    Click="BtnDisableBlock_Click"/>
+
+            <Button Grid.Column="2" Content="&lt;&lt; REFRESH"
+                    Style="{StaticResource NeutralBtn}" Height="32" Margin="4 0 0 0"
+                    Click="BtnRefresh_Click"/>
+        </Grid>
+
+        <!-- === IP LIST === -->
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="IP / CIDR BLOCK LIST" FontSize="8"
+                       Foreground="#333355" Margin="0 0 0 4"/>
+
+            <ListBox x:Name="listIPs" Grid.Row="1"
+                     Style="{StaticResource DarkList}"
+                     SelectionMode="Extended"
+                     MinHeight="160"/>
+
+            <!-- Add row -->
+            <Grid Grid.Row="2" Margin="0 6 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="70"/>
+                    <ColumnDefinition Width="70"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="txtNewIP" Grid.Column="0"
+                         Style="{StaticResource DarkInput}" Height="30"
+                         ToolTip="e.g. 1.2.3.0/24"
+                         KeyDown="TxtNewIP_KeyDown"/>
+                <Button Grid.Column="1" Content="+ ADD"
+                        Style="{StaticResource GreenBtn}" Height="30" Margin="5 0 0 0"
+                        Click="BtnAdd_Click"/>
+                <Button Grid.Column="2" Content="X DEL"
+                        Style="{StaticResource RedBtn}" Height="30" Margin="5 0 0 0"
+                        Click="BtnRemove_Click"/>
+            </Grid>
+
+            <!-- Bulk row -->
+            <Grid Grid.Row="3" Margin="0 5 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content=">> APPLY TO RULE"
+                        Style="{StaticResource GreenBtn}" Height="30" Margin="0 0 4 0"
+                        Click="BtnApply_Click"/>
+                <Button Grid.Column="1" Content="^ IMPORT TXT"
+                        Style="{StaticResource NeutralBtn}" Height="30" Margin="4 0 4 0"
+                        Click="BtnImport_Click"/>
+                <Button Grid.Column="2" Content="v EXPORT TXT"
+                        Style="{StaticResource NeutralBtn}" Height="30" Margin="4 0 0 0"
+                        Click="BtnExport_Click"/>
+            </Grid>
+        </Grid>
+
+        <!-- === LOG BAR === -->
+        <Border Grid.Row="5" Style="{StaticResource SectionBorder}"
+                Padding="8 6" Margin="0 8 0 0">
+            <TextBlock x:Name="txtLog" Text="Ready."
+                       FontSize="10" Foreground="#444466"
+                       FontFamily="Consolas" TextWrapping="Wrap"/>
+        </Border>
+    </Grid>
+</Window>
