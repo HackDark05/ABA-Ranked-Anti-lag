@@ -56,7 +56,8 @@ Once you are back in the lobby, press **Reset Trigger** to disable the firewall 
 
 ## First-time setup
 
-![Region Blocker main UI](screenshots/main_ui.png)
+![Region Blocker main UI](<img width="657" height="912" alt="image" src="https://github.com/user-attachments/assets/4b9fd941-fde5-4821-a388-7b529c65c612" />
+)
 
 ### Default IP list — blocks everything except Singapore & Hong Kong
 
@@ -91,7 +92,8 @@ If the default positions are not hitting black areas during the loading screen, 
 
 ## How to use
 
-![Region Blocker triggered state](screenshots/triggered_ui.png)
+![Region Blocker triggered state](<img width="649" height="929" alt="image" src="https://github.com/user-attachments/assets/4da38a41-f0fa-402d-b99b-720f872e7f33" />
+)
 
 ### Normal session workflow
 
@@ -125,7 +127,8 @@ Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall 
 
 ## Preview window & detect points
 
-![Preview window with detect points](screenshots/preview_window.png)
+![Preview window with detect points](<img width="1456" height="819" alt="image" src="https://github.com/user-attachments/assets/9cc5490a-e958-4309-8777-2fea574290a9" />
+)
 
 Open the preview window with **⊞ PREVIEW** while Roblox is running.
 
