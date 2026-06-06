@@ -1,6 +1,6 @@
 # ABA-Ranked-Anti-lag
 
-> A Windows desktop tool for **ABA (A Bizarre Adventure)** players to automatically block EU/JP/unwanted region servers during Ranked matches — reducing lag and keeping lobbies regional.
+> A Windows desktop tool for **ABA (Anime Battle Arena)** players to automatically block EU/JP/unwanted region servers during Ranked matches — reducing lag and keeping lobbies regional.
 
 Built in C# WPF. No AutoHotkey, no external scripts. Just a single `.exe`.
 
