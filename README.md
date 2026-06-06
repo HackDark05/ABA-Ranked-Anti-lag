@@ -46,11 +46,10 @@ Once you are back in the lobby, press **Reset Trigger** to disable the firewall 
 
 ## Installation
 
-1. Download the latest release `.zip` from the [Releases](../../releases) page.
-2. Extract the folder anywhere (e.g. `C:\Tools\ABA-Anti-lag\`).
-3. Run `RegionBlocker.exe` — Windows will ask for administrator permission. Click **Yes**.
-
-> **Note:** The `.NET 8 Desktop Runtime` must be installed. If you get an error on launch saying "you must install .NET", download it from the link above and re-run.
+1. Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+2. Clone or download this repository.
+3. Double-click `build.bat` in the root folder — it will compile and output `RegionBlocker.exe` to `bin\publish\`.
+4. Run the `.exe` from that folder as Administrator.
 
 ---
 
