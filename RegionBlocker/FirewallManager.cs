@@ -24,14 +24,17 @@ namespace RegionBlocker
             if (list.Count == 0)
                 throw new InvalidOperationException("No IPs configured — press 'Apply to Rule' first.");
 
-            // Always recreate the rule to ensure IPs and Enabled state are correct
             string ipArray = BuildIpArray(list);
             string script = $@"
 $name = '{RuleName}'
-Remove-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
-$ips = {ipArray}
-New-NetFirewallRule -DisplayName $name -Direction Outbound -Action Block `
-    -RemoteAddress $ips -Profile Any -Enabled True | Out-Null
+$rule = Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
+if ($rule) {{
+    Set-NetFirewallRule -DisplayName $name -Enabled True
+}} else {{
+    $ips = {ipArray}
+    New-NetFirewallRule -DisplayName $name -Direction Outbound -Action Block `
+        -RemoteAddress $ips -Profile Any -Enabled True | Out-Null
+}}
 ";
             RunPSFile(script);
         }
@@ -72,7 +75,6 @@ if ({(list.Count > 0 ? "1" : "0")}) {{
             return sb.ToString();
         }
 
-        // Write script to a temp .ps1 file and run it — avoids all -Command escape issues
         private static string RunPSFile(string script)
         {
             string tmp = Path.Combine(Path.GetTempPath(), $"rb_{Guid.NewGuid():N}.ps1");
@@ -87,7 +89,6 @@ if ({(list.Count > 0 ? "1" : "0")}) {{
             }
         }
 
-        // Run powershell with raw arguments
         private static string RunPS(string arguments)
         {
             var psi = new ProcessStartInfo
@@ -103,7 +104,6 @@ if ({(list.Count > 0 ? "1" : "0")}) {{
             string output = proc.StandardOutput.ReadToEnd();
             string errors = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
-            // Throw on PowerShell error so MainWindow can log it
             if (!string.IsNullOrWhiteSpace(errors) && proc.ExitCode != 0)
                 throw new Exception(errors.Trim());
             return output;

@@ -110,32 +110,41 @@ namespace RegionBlocker
         private void OnBlackScreen()
         {
             _triggerCount++;
+            int count = _triggerCount;
+            var ipsCopy = _ips.ToList();
+
             Dispatcher.Invoke(() =>
             {
-                txtTriggerCount.Text = $"{_triggerCount}x";
-
-                // Change reset button to orange/alert to indicate trigger is active
+                txtTriggerCount.Text = $"{count}x";
                 SetResetTriggerButtonState(active: true);
 
-                if (_ips.Count == 0)
+                if (ipsCopy.Count == 0)
                 {
                     Log("BLACK SCREEN detected — no IPs configured. Press 'Apply to Rule' first.");
                     return;
                 }
 
-                Log($"BLACK SCREEN detected — enabling firewall ({_ips.Count} IPs)...");
+                Log($"BLACK SCREEN detected — enabling firewall ({ipsCopy.Count} IPs)...");
+            });
 
+            if (ipsCopy.Count == 0) return;
+
+            Task.Run(() =>
+            {
                 try
                 {
-                    FirewallManager.EnableBlock(_ips);
+                    FirewallManager.EnableBlock(ipsCopy);
                     ConfigManager.WriteLog("TRIGGERED: Black screen detected, block rule enabled.");
-                    RefreshFirewallStatus();
-                    RefreshLastLog();
-                    Log($"Block rule ENABLED. (trigger #{_triggerCount})");
+                    Dispatcher.Invoke(() =>
+                    {
+                        RefreshFirewallStatus();
+                        RefreshLastLog();
+                        Log($"Block rule ENABLED. (trigger #{count})");
+                    });
                 }
                 catch (Exception ex)
                 {
-                    Log($"Trigger error: {ex.Message}");
+                    Dispatcher.Invoke(() => Log($"Trigger error: {ex.Message}"));
                 }
             });
         }
