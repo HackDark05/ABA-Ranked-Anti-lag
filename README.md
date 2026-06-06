@@ -1,5 +1,7 @@
 # ABA-Ranked-Anti-lag
 
+🇻🇳 [Xem bản tiếng Việt](README.vi.md)
+
 > A Windows desktop tool for **ABA (Anime Battle Arena)** players to automatically block EU/JP/unwanted region servers during Ranked matches — reducing lag and keeping lobbies regional.
 
 Built in C# WPF. No AutoHotkey, no external scripts. Just a single `.exe`.
@@ -14,6 +16,7 @@ Built in C# WPF. No AutoHotkey, no external scripts. Just a single `.exe`.
 - [First-time setup](#first-time-setup)
 - [How to use](#how-to-use)
 - [Preview window & detect points](#preview-window--detect-points)
+- [Export IPs from firewall rule](#export-ips-from-firewall-rule)
 - [Features](#features)
 - [File locations](#file-locations)
 - [Build from source](#build-from-source)
@@ -53,18 +56,30 @@ Once you are back in the lobby, press **Reset Trigger** to disable the firewall 
 
 ## First-time setup
 
-### 1. Add IPs to the block list
+![Region Blocker main UI](screenshots/main_ui.png)
 
-The tool ships with a default list of EU/JP server IP ranges. If your list is empty:
+### Default IP list — blocks everything except Singapore & Hong Kong
+
+The tool ships with a built-in IP list covering EU, JP, and other high-latency server ranges. **This list blocks all regions except Singapore and Hong Kong**, so you only connect to the nearest servers right away.
+
+When you open the app for the first time, the IP list is already populated in the **IP / CIDR BLOCK LIST** panel. All you need to do is:
+
+### 1. Apply the IP list to the firewall rule
+
+Click **>> APPLY TO RULE**.
+
+The tool will create a Windows Firewall rule named `BlockIP` in a **disabled** state. The monitor will enable it automatically when a black screen is detected.
+
+> You only need to do this **once**, or whenever you change the IP list.
+
+### 2. Add / edit IPs (optional)
+
+If you want to customize the list:
 
 - Type an IP or CIDR range in the input box at the bottom (e.g. `128.116.1.0/24`) and click **+ ADD**, or
 - Click **^ IMPORT TXT** to load a `.txt` file with one IP/CIDR per line.
 
-### 2. Apply the IP list to the firewall rule
-
-Click **>> APPLY TO RULE**. This creates a Windows Firewall rule called `BlockIP` in a **disabled** state. The monitor will enable it automatically when a black screen is detected.
-
-> You only need to do this once, or whenever you change the IP list.
+After editing, click **>> APPLY TO RULE** again to update the rule.
 
 ### 3. Configure detect points (optional)
 
@@ -75,6 +90,8 @@ If the default positions are not hitting black areas during the loading screen, 
 ---
 
 ## How to use
+
+![Region Blocker triggered state](screenshots/triggered_ui.png)
 
 ### Normal session workflow
 
@@ -100,8 +117,6 @@ Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall 
 
 ### Manual firewall control
 
-You can also control the firewall rule manually at any time:
-
 - **[ON] ENABLE BLOCK** — enables the rule immediately.
 - **[OFF] DISABLE BLOCK** — disables the rule immediately.
 - **<< REFRESH** — re-reads the current rule status from Windows.
@@ -109,6 +124,8 @@ You can also control the firewall rule manually at any time:
 ---
 
 ## Preview window & detect points
+
+![Preview window with detect points](screenshots/preview_window.png)
 
 Open the preview window with **⊞ PREVIEW** while Roblox is running.
 
@@ -127,6 +144,51 @@ Open the preview window with **⊞ PREVIEW** while Roblox is running.
 **Black if ≥ N** — slider controls how many points must be black before a trigger fires (default: 4 out of 5).
 
 > Detect point positions are saved to disk and restored automatically next launch.
+
+---
+
+## Export IPs from firewall rule
+
+If you want to **pull the current IP list out of the `BlockIP` rule** into a `.txt` file to edit and re-import, run the following PowerShell command as Administrator:
+
+```powershell
+$rule = Get-NetFirewallRule -DisplayName "BlockIP" -ErrorAction SilentlyContinue
+if ($rule) {
+    $addresses = ($rule | Get-NetFirewallAddressFilter).RemoteAddress
+    $addresses | ForEach-Object { Write-Host $_ }
+    Write-Host "`nTotal: $($addresses.Count) IPs" -ForegroundColor Cyan
+} else {
+    Write-Host "Rule 'BlockIP' not found" -ForegroundColor Red
+}
+```
+
+To export directly to a `.txt` file on your Desktop:
+
+```powershell
+$rule = Get-NetFirewallRule -DisplayName "BlockIP" -ErrorAction SilentlyContinue
+if ($rule) {
+    $addresses = ($rule | Get-NetFirewallAddressFilter).RemoteAddress
+    $addresses | Out-File -FilePath "$env:USERPROFILE\Desktop\block_ips.txt" -Encoding UTF8
+    Write-Host "Exported $($addresses.Count) IPs to Desktop\block_ips.txt" -ForegroundColor Cyan
+} else {
+    Write-Host "Rule 'BlockIP' not found" -ForegroundColor Red
+}
+```
+
+### Edit workflow
+
+```
+Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
+                                                                ↓
+                                                  Remove old IPs from the list if needed
+                                                                ↓
+                                                       >> APPLY TO RULE
+```
+
+1. Run the export command above to get `block_ips.txt` on your Desktop.
+2. Open the file and add or remove IP/CIDR entries as needed.
+3. In the app, click **X DEL** to remove individual old entries, or clear the list and use **^ IMPORT TXT** to load the edited file.
+4. Click **>> APPLY TO RULE** to update the firewall rule.
 
 ---
 
