@@ -5,7 +5,7 @@
         Height="740" Width="540"
         MinHeight="700" MinWidth="500"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize"
+        ResizeMode="CanResize"
         Background="#0A0A0F"
         Foreground="White"
         FontFamily="Consolas">
@@ -238,22 +238,26 @@
                     <Button x:Name="btnStartMonitor" Grid.Column="0"
                             Content="> START MONITOR"
                             Style="{StaticResource GreenBtn}" Height="34" Margin="0 0 4 0"
+                            FontSize="10"
                             Click="BtnStartMonitor_Click"/>
 
                     <Button x:Name="btnStopMonitor" Grid.Column="1"
                             Content="|| STOP MONITOR"
                             Style="{StaticResource RedBtn}" Height="34" Margin="4 0 4 0"
+                            FontSize="10"
                             IsEnabled="False"
                             Click="BtnStopMonitor_Click"/>
 
                     <Button x:Name="btnResetTrigger" Grid.Column="2"
                             Content="~ RESET TRIGGER"
                             Style="{StaticResource NeutralBtn}" Height="34" Margin="4 0 4 0"
+                            FontSize="10"
                             Click="BtnResetTrigger_Click"/>
 
                     <Button x:Name="btnPreview" Grid.Column="3"
                             Content="⊞ PREVIEW"
                             Style="{StaticResource BlueBtn}" Height="34" Margin="4 0 0 0"
+                            FontSize="10"
                             Click="BtnPreview_Click"/>
                 </Grid>
 
