@@ -4,8 +4,6 @@
 
 > Công cụ Windows dành cho người chơi **ABA (Anime Battle Arena)** — tự động chặn server EU/JP/lag trong Ranked, giữ lobby theo khu vực.
 
-
-
 ---
 
 ## Mục lục
@@ -30,7 +28,7 @@ Khi Roblox load vào Ranked match, có một khoảnh khắc **màn hình đen n
 
 Ngay khi phát hiện màn hình đen, tool **bật rule chặn outbound của Windows Firewall** chứa dải IP của server bạn muốn tránh. Điều này đẩy bạn về lobby trước khi match kết nối hoàn toàn — không cần Alt-F4 hay tắt game.
 
-Khi đã về lobby, nhấn **Reset Trigger** để tắt rule firewall và chuẩn bị cho lần queue tiếp theo.
+Khi đã về lobby, nhấn **Stop Monitor** để tắt rule firewall tự động, sau đó nhấn **Start Monitor** lại để chuẩn bị cho lần queue tiếp theo.
 
 ---
 
@@ -90,19 +88,21 @@ Nếu các vị trí mặc định không nằm đúng vùng đen trong loading 
 
 ## Cách dùng
 
-![Trạng thái khi trigger đã kích hoạt](img/TriggeredState.jpg)
+![Giao diện chính của Region Blocker](img/MainUI.jpg)
 
 ### Workflow một session thông thường
 
 ```
 Nhấn Start Monitor  →  Queue Ranked  →  Phát hiện màn đen  →  Firewall tự bật
-        ↓                                                              ↓
-    Đang chơi...                                          Bị đá về lobby
-                                                                  ↓
-                                                       Nhấn Reset Trigger
-                                                      (tắt rule firewall)
-                                                                  ↓
-                                                           Queue lại
+                                                                       ↓
+                                                           Bị đá về lobby
+                                                                       ↓
+                                                         Nhấn Stop Monitor
+                                                     (firewall tự tắt tự động)
+                                                                       ↓
+                                                         Nhấn Start Monitor
+                                                                       ↓
+                                                              Queue lại
 ```
 
 ### Từng bước
@@ -111,8 +111,8 @@ Nhấn Start Monitor  →  Queue Ranked  →  Phát hiện màn đen  →  Firew
 2. Nhấn **> START MONITOR**.
 3. Mở Roblox và queue Ranked match.
 4. Monitor phát hiện màn hình đen → tự bật rule chặn → bạn bị đá về lobby.
-5. Nút **Reset Trigger** chuyển màu **cam** — báo hiệu trigger vừa kích hoạt.
-6. Nhấn **⚠ RESET TRIGGER** để tắt rule firewall và reset. Nút về màu bình thường, bạn sẵn sàng queue lại.
+5. Nhấn **|| STOP MONITOR** — rule firewall tắt tự động.
+6. Nhấn **> START MONITOR** lại để sẵn sàng queue ván tiếp theo.
 
 ### Điều khiển firewall thủ công
 
@@ -202,7 +202,8 @@ Xuất IP ra .txt  →  Chỉnh sửa file (thêm/xoá IP)  →  Import TXT vào
 - Polling thích ứng: 5 giây khi không tìm thấy Roblox, 1 giây khi đang chạy
 
 ### Quản lý Firewall
-- Tự động bật rule `BlockIP` outbound khi phát hiện
+- Tự động bật rule `BlockIP` outbound khi phát hiện màn hình đen
+- Tự động tắt rule khi nhấn Stop Monitor
 - Bật / tắt thủ công bất cứ lúc nào
 - Danh sách IP được xây dựng lại sạch mỗi lần bật để đảm bảo chính xác
 - Hỗ trợ IP và CIDR mọi định dạng (`x.x.x.x`, `x.x.x.x/24`, `x.x.x.x/255.255.255.0`)
@@ -215,8 +216,8 @@ Xuất IP ra .txt  →  Chỉnh sửa file (thêm/xoá IP)  →  Import TXT vào
 
 ### Trigger gate
 - Chỉ bắn một lần mỗi session — không spam bật firewall
-- Nút Reset Trigger chuyển **cam** khi trigger đang active
-- Một click reset gate **và** tắt rule firewall đồng thời
+- Bộ đếm trigger hiển thị trên giao diện (tổng trong session)
+- Nhấn Stop Monitor sẽ reset gate **và** tắt rule firewall đồng thời
 
 ### Hiển thị trạng thái
 - Rule status: `ENABLED` / `DISABLED` / `NO RULE`

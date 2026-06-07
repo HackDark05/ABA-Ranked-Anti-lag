@@ -4,8 +4,6 @@
 
 > A Windows desktop tool for **ABA (Anime Battle Arena)** players to automatically block EU/JP/unwanted region servers during Ranked matches — reducing lag and keeping lobbies regional.
 
-
-
 ---
 
 ## Table of contents
@@ -30,7 +28,7 @@ When Roblox loads into a Ranked match, there is a brief **black screen** between
 
 The moment it detects the black screen it **enables a Windows Firewall outbound block rule** containing the IP ranges of servers you want to avoid. This kicks you back to the lobby before the match fully connects — without needing to alt-F4 or close the game.
 
-Once you are back in the lobby, press **Reset Trigger** to disable the firewall rule and prepare for the next queue.
+Once you are back in the lobby, press **Stop Monitor** to disable the firewall rule automatically, then **Start Monitor** again to prepare for the next queue.
 
 ---
 
@@ -90,19 +88,21 @@ If the default positions are not hitting black areas during the loading screen, 
 
 ## How to use
 
-![Region Blocker triggered state](img/TriggeredState.jpg)
+![Region Blocker main UI](img/MainUI.jpg)
 
 ### Normal session workflow
 
 ```
 Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall enables automatically
-     ↓                                                                         ↓
- Playing...                                                        Kicked back to lobby
-                                                                              ↓
-                                                                    Press Reset Trigger
-                                                                    (disables firewall rule)
-                                                                              ↓
-                                                                      Queue again
+                                                                          ↓
+                                                               Kicked back to lobby
+                                                                          ↓
+                                                               Press Stop Monitor
+                                                           (firewall disables automatically)
+                                                                          ↓
+                                                               Press Start Monitor
+                                                                          ↓
+                                                                    Queue again
 ```
 
 ### Step by step
@@ -111,8 +111,8 @@ Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall 
 2. Click **> START MONITOR**.
 3. Open Roblox and queue for a Ranked match.
 4. The monitor will detect the black screen and enable the block rule automatically. You will be sent back to the lobby.
-5. The **Reset Trigger** button will turn **orange** — this means a trigger has fired.
-6. Click **⚠ RESET TRIGGER** to disable the firewall rule and reset the gate. The button returns to its normal color and you are ready to queue again.
+5. Click **|| STOP MONITOR** — the firewall rule is disabled automatically.
+6. Click **> START MONITOR** again to prepare for the next queue.
 
 ### Manual firewall control
 
@@ -203,6 +203,7 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
 
 ### Firewall management
 - Automatically enables the `BlockIP` outbound rule on detection
+- Automatically disables the rule when Stop Monitor is pressed
 - Manual enable / disable at any time
 - IP list rebuilt cleanly on every enable to ensure accuracy
 - Supports IP addresses and CIDR ranges in all formats (`x.x.x.x`, `x.x.x.x/24`, `x.x.x.x/255.255.255.0`)
@@ -215,8 +216,8 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
 
 ### Trigger gate
 - Fires once per session — will not spam-enable the firewall
-- Reset Trigger button turns **orange** when a trigger is active as a visual alert
-- One click resets the gate **and** disables the firewall rule simultaneously
+- Trigger counter displayed in the UI (total for the session)
+- Stopping the monitor resets the gate **and** disables the firewall rule simultaneously
 
 ### Status display
 - Rule status: `ENABLED` / `DISABLED` / `NO RULE`
