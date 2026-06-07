@@ -28,7 +28,7 @@ When Roblox loads into a Ranked match, there is a brief **black screen** between
 
 The moment it detects the black screen it **enables a Windows Firewall outbound block rule** containing the IP ranges of servers you want to avoid. This kicks you back to the lobby before the match fully connects — without needing to alt-F4 or close the game.
 
-Once you are back in the lobby, press **Stop Monitor** to disable the firewall rule automatically, then **Start Monitor** again to prepare for the next queue.
+Once the firewall rule is active, the monitor will not re-trigger until you **disable the block rule** (either manually with **[OFF] DISABLE BLOCK**, or by stopping the monitor). As soon as the rule is disabled, the tool is ready to trigger again automatically on the next black screen.
 
 ---
 
@@ -46,7 +46,7 @@ Once you are back in the lobby, press **Stop Monitor** to disable the firewall r
 
 1. Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 2. Clone or download this repository.
-3. Double-click `build.bat` in the root folder — it will compile and output `RegionBlocker.exe` to `bin\publish\`.
+3. Double-click `build.bat` in the root folder — it compiles and outputs `RegionBlocker.exe` to `bin\publish\`.
 4. Run the `.exe` from that folder as Administrator.
 
 ---
@@ -65,44 +65,38 @@ When you open the app for the first time, the IP list is already populated in th
 
 Click **>> APPLY TO RULE**.
 
-The tool will create a Windows Firewall rule named `BlockIP` in a **disabled** state. The monitor will enable it automatically when a black screen is detected.
+The tool creates a Windows Firewall rule named `BlockIP` in a **disabled** state. The monitor will enable it automatically when a black screen is detected.
 
 > You only need to do this **once**, or whenever you change the IP list.
 
 ### 2. Add / edit IPs (optional)
 
-If you want to customize the list:
-
-- Type an IP or CIDR range in the input box at the bottom (e.g. `128.116.1.0/24`) and click **+ ADD**, or
+- Type an IP or CIDR range in the input box (e.g. `128.116.1.0/24`) and click **+ ADD**, or
 - Click **^ IMPORT TXT** to load a `.txt` file with one IP/CIDR per line.
 
 After editing, click **>> APPLY TO RULE** again to update the rule.
 
 ### 3. Configure detect points (optional)
 
-Click **⊞ PREVIEW** to open the preview window. With Roblox open, you will see a live thumbnail of the game window. The cyan markers show where the tool is sampling pixels.
-
-If the default positions are not hitting black areas during the loading screen, drag the markers to better positions and click **Apply**.
+Click **⊞ PREVIEW** to open the preview window. With Roblox open, you will see a live thumbnail of the game window. The cyan markers show where the tool samples pixels. If the defaults are not landing on black areas during loading, drag the markers and click **Apply**.
 
 ---
 
 ## How to use
 
-![Region Blocker main UI](img/MainUI.jpg)
+![Region Blocker triggered state](img/TriggeredState.jpg)
 
 ### Normal session workflow
 
 ```
-Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall enables automatically
-                                                                          ↓
+Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall ENABLED automatically
+                                                                            ↓
                                                                Kicked back to lobby
-                                                                          ↓
-                                                               Press Stop Monitor
-                                                           (firewall disables automatically)
-                                                                          ↓
-                                                               Press Start Monitor
-                                                                          ↓
-                                                                    Queue again
+                                                                            ↓
+                                                           Press [OFF] DISABLE BLOCK
+                                                                            ↓
+                                                                     Queue again
+                                                              (monitor re-arms itself)
 ```
 
 ### Step by step
@@ -110,14 +104,19 @@ Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall 
 1. Open the app and make sure **RULE STATUS** shows `DISABLED` (green). If it shows `NO RULE`, click **>> APPLY TO RULE** first.
 2. Click **> START MONITOR**.
 3. Open Roblox and queue for a Ranked match.
-4. The monitor will detect the black screen and enable the block rule automatically. You will be sent back to the lobby.
-5. Click **|| STOP MONITOR** — the firewall rule is disabled automatically.
-6. Click **> START MONITOR** again to prepare for the next queue.
+4. The monitor detects the black screen and enables the block rule automatically. You will be sent back to the lobby.
+
+   > A **system tray notification** will appear confirming the trigger, which block number it was, and how many IPs are now blocked.
+
+   ![Trigger notification balloon](img/TriggerNotification.jpg)
+
+5. Once back in the lobby, click **[OFF] DISABLE BLOCK** to turn off the firewall rule. The monitor re-arms automatically — no extra steps needed.
+6. Queue again.
 
 ### Manual firewall control
 
 - **[ON] ENABLE BLOCK** — enables the rule immediately.
-- **[OFF] DISABLE BLOCK** — disables the rule immediately.
+- **[OFF] DISABLE BLOCK** — disables the rule immediately and re-arms the monitor.
 - **<< REFRESH** — re-reads the current rule status from Windows.
 
 ---
@@ -142,15 +141,15 @@ Open the preview window with **⊞ PREVIEW** while Roblox is running.
 **● / ○** — red dot means that point is currently detecting black; green means it is not.  
 **Black if ≥ N** — slider controls how many points must be black before a trigger fires (default: 4 out of 5).
 
-> Detect point positions are saved to disk and restored automatically next launch.
+> Detect point positions are saved to disk and restored automatically on next launch.
 
 ---
 
 ## Export IPs from firewall rule
 
-If you want to **pull the current IP list out of the `BlockIP` rule** into a `.txt` file to edit and re-import, run the following PowerShell command as Administrator:
+If you want to pull the current IP list out of the `BlockIP` rule into a `.txt` file, run the following PowerShell command as Administrator:
 
-> **Note:** The commands below use `"BlockIP"` as the rule name — this is the default name the tool creates. If you renamed your firewall rule, replace `"BlockIP"` in the commands with your actual rule name. You can check the exact name in Windows Defender Firewall → Outbound Rules.
+> **Note:** These commands use `"BlockIP"` as the rule name — the default name the tool creates. If you renamed your rule, replace `"BlockIP"` with your actual rule name. Check the name under Windows Defender Firewall → Outbound Rules.
 
 ```powershell
 $rule = Get-NetFirewallRule -DisplayName "BlockIP" -ErrorAction SilentlyContinue
@@ -186,24 +185,18 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
                                                        >> APPLY TO RULE
 ```
 
-1. Run the export command above to get `block_ips.txt` on your Desktop.
-2. Open the file and add or remove IP/CIDR entries as needed.
-3. In the app, click **X DEL** to remove individual old entries, or clear the list and use **^ IMPORT TXT** to load the edited file.
-4. Click **>> APPLY TO RULE** to update the firewall rule.
-
 ---
 
 ## Features
 
 ### Black screen detection
-- Pixel sampling via `PrintWindow` — works even when Roblox is minimized
+- Pixel sampling via `PrintWindow`
 - Up to 5 configurable sample points with drag-and-drop placement
 - Adjustable black threshold (1–5 points)
-- Adaptive polling: 5 s when Roblox is not found, 1 s when running
+- Adaptive polling: 3 s when Roblox is not found, 300 ms when running
 
 ### Firewall management
 - Automatically enables the `BlockIP` outbound rule on detection
-- Automatically disables the rule when Stop Monitor is pressed
 - Manual enable / disable at any time
 - IP list rebuilt cleanly on every enable to ensure accuracy
 - Supports IP addresses and CIDR ranges in all formats (`x.x.x.x`, `x.x.x.x/24`, `x.x.x.x/255.255.255.0`)
@@ -214,10 +207,16 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
 - Export current list to `.txt`
 - List auto-saved on every change, reloaded on launch
 
-### Trigger gate
-- Fires once per session — will not spam-enable the firewall
-- Trigger counter displayed in the UI (total for the session)
-- Stopping the monitor resets the gate **and** disables the firewall rule simultaneously
+### Auto re-arm trigger
+- Trigger fires whenever a black screen is detected **and** the firewall rule is currently disabled
+- No manual reset needed — disabling the block rule is all it takes to re-arm
+- System tray balloon notification on every trigger with trigger count and IP count
+
+### Minimized window warning
+- If Roblox is minimized, detection is unavailable
+- A tray notification will appear prompting you to restore the Roblox window
+
+  ![Minimized warning notification](img/MinimizeWarning.jpg)
 
 ### Status display
 - Rule status: `ENABLED` / `DISABLED` / `NO RULE`
@@ -230,7 +229,6 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
 ### System
 - Single `.exe`, no dependencies beyond .NET 8 runtime
 - Auto UAC elevation on launch
-- System tray icon with balloon tip for minimized Roblox warning
 - All config stored in `%AppData%\RegionBlocker\`
 
 ---
@@ -265,13 +263,16 @@ Output: `bin\publish\RegionBlocker.exe`
 ## FAQ
 
 **Q: The firewall rule is not being created.**  
-A: Make sure the app is running as Administrator. The UAC prompt should appear automatically on launch — if you dismissed it, right-click the `.exe` and choose *Run as administrator*.
+A: Make sure the app is running as Administrator. The UAC prompt appears automatically on launch — if you dismissed it, right-click the `.exe` and choose *Run as administrator*.
 
 **Q: The black screen is not being detected.**  
-A: Open the Preview window while in a loading screen and check if any pixel dots turn red. If not, drag the detect points to areas that are definitely black during loading. Click Apply when done.
+A: Open the Preview window during a loading screen and check if any pixel dots turn red. If not, drag the detect points to areas that are definitely black during loading, then click Apply.
 
 **Q: I get kicked every match even when I don't want to block.**  
 A: Make sure the firewall rule is **DISABLED** before queuing. Press **[OFF] DISABLE BLOCK** or **<< REFRESH** to check the current state. Only start the monitor when you actually want to block.
+
+**Q: The monitor triggered but I'm already in the match.**  
+A: The detect points may be landing on areas that turn black mid-game (e.g. dark scenery). Open the Preview window and move the points to the center of the screen or areas that stay bright during normal gameplay.
 
 **Q: The app crashes on launch.**  
 A: Install the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) and try again.
