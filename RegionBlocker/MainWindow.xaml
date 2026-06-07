@@ -232,7 +232,6 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <Button x:Name="btnStartMonitor" Grid.Column="0"
@@ -248,13 +247,7 @@
                             IsEnabled="False"
                             Click="BtnStopMonitor_Click"/>
 
-                    <Button x:Name="btnResetTrigger" Grid.Column="2"
-                            Content="~ RESET TRIGGER"
-                            Style="{StaticResource NeutralBtn}" Height="34" Margin="4 0 4 0"
-                            FontSize="10"
-                            Click="BtnResetTrigger_Click"/>
-
-                    <Button x:Name="btnPreview" Grid.Column="3"
+                    <Button x:Name="btnPreview" Grid.Column="2"
                             Content="⊞ PREVIEW"
                             Style="{StaticResource BlueBtn}" Height="34" Margin="4 0 0 0"
                             FontSize="10"

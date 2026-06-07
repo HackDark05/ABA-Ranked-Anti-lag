@@ -118,7 +118,6 @@ namespace RegionBlocker
             Dispatcher.Invoke(() =>
             {
                 txtTriggerCount.Text = $"{count}x";
-                SetResetTriggerButtonState(active: true);
 
                 if (ipsCopy.Count == 0)
                 {
@@ -189,50 +188,25 @@ namespace RegionBlocker
             SetLabel(txtScreenState, "-", "#333355");
             SetAllDots(System.Drawing.Color.FromArgb(17, 17, 34));
             txtBlackCount.Text = "";
-            Log("Monitor stopped.");
+
+            try
+            {
+                FirewallManager.DisableBlock(_ips);
+                ConfigManager.WriteLog("Monitor stopped: block rule disabled.");
+                RefreshFirewallStatus();
+                RefreshLastLog();
+                Log("Monitor stopped — block rule DISABLED.");
+            }
+            catch (Exception ex)
+            {
+                Log($"Monitor stopped (firewall error: {ex.Message})");
+            }
         }
 
         private void BtnPreview_Click(object sender, RoutedEventArgs e)
         {
             var pw = new PreviewWindow(_monitor) { Owner = this };
             pw.Show();
-        }
-
-        private void BtnResetTrigger_Click(object sender, RoutedEventArgs e)
-        {
-            _monitor.ResetTrigger();
-            SetResetTriggerButtonState(active: false);
-
-            try
-            {
-                FirewallManager.DisableBlock(_ips);
-                ConfigManager.WriteLog("Reset: trigger cleared and block rule disabled.");
-                RefreshFirewallStatus();
-                RefreshLastLog();
-                Log("Trigger reset — block rule disabled. Ready for next detection.");
-            }
-            catch (Exception ex)
-            {
-                Log($"Trigger reset (firewall error: {ex.Message})");
-            }
-        }
-
-        private void SetResetTriggerButtonState(bool active)
-        {
-            if (active)
-            {
-                btnResetTrigger.Background  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(120, 50, 0));
-                btnResetTrigger.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 100, 0));
-                btnResetTrigger.Foreground  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 160, 40));
-                btnResetTrigger.Content     = "⚠ RESET TRIGGER";
-            }
-            else
-            {
-                btnResetTrigger.Background  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 46));
-                btnResetTrigger.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(58, 58, 92));
-                btnResetTrigger.Foreground  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(192, 192, 224));
-                btnResetTrigger.Content     = "~ RESET TRIGGER";
-            }
         }
 
         // ── Firewall buttons ──────────────────────────────────────────────────
