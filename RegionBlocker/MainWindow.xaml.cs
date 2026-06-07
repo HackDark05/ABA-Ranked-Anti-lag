@@ -84,9 +84,7 @@ namespace RegionBlocker
                         if (status.IsMinimized)
                         {
                             SetLabel(txtScreenState, "MINIMIZED", "#FFAA00");
-                            txtBlackCount.Text = status.IsBlackScreen
-                                ? $"(minimized) {status.BlackCount}/5 black"
-                                : "(minimized)";
+                            txtBlackCount.Text = "Restore Roblox to resume detection";
                             ShowMinimizeWarning();
                         }
                         else
@@ -111,9 +109,14 @@ namespace RegionBlocker
 
         private void OnBlackScreen()
         {
+            var ipsCopy = _ips.ToList();
+            string ruleStatus = FirewallManager.GetRuleStatus();
+
+            if (ruleStatus == "ENABLED")
+                return;
+
             _triggerCount++;
             int count = _triggerCount;
-            var ipsCopy = _ips.ToList();
 
             Dispatcher.Invoke(() =>
             {
@@ -122,10 +125,16 @@ namespace RegionBlocker
                 if (ipsCopy.Count == 0)
                 {
                     Log("BLACK SCREEN detected — no IPs configured. Press 'Apply to Rule' first.");
+                    _trayIcon?.ShowBalloonTip(5000, "RegionBlocker — Triggered",
+                        $"Black screen detected (#{count}) — no IPs configured. Press 'Apply to Rule' first.",
+                        WinForms.ToolTipIcon.Warning);
                     return;
                 }
 
                 Log($"BLACK SCREEN detected — enabling firewall ({ipsCopy.Count} IPs)...");
+                _trayIcon?.ShowBalloonTip(5000, "RegionBlocker — Triggered",
+                    $"Black screen detected (#{count}) — enabling firewall block ({ipsCopy.Count} IPs).",
+                    WinForms.ToolTipIcon.Info);
             });
 
             if (ipsCopy.Count == 0) return;
@@ -141,6 +150,9 @@ namespace RegionBlocker
                         RefreshFirewallStatus();
                         RefreshLastLog();
                         Log($"Block rule ENABLED. (trigger #{count})");
+                        _trayIcon?.ShowBalloonTip(5000, "RegionBlocker — Block Active",
+                            $"Firewall block rule ENABLED. (trigger #{count}, {ipsCopy.Count} IPs blocked)",
+                            WinForms.ToolTipIcon.Error);
                     });
                 }
                 catch (Exception ex)
@@ -363,8 +375,9 @@ namespace RegionBlocker
         {
             if (_minimizeNotified) return;
             _minimizeNotified = true;
-            _trayIcon?.ShowBalloonTip(4000, "RegionBlocker",
-                "Roblox is minimized — still monitoring for black screen.", WinForms.ToolTipIcon.Warning);
+            _trayIcon?.ShowBalloonTip(6000, "RegionBlocker — Action Required",
+                "Roblox is currently minimized. Detection is unavailable in this state. Please restore the Roblox window.",
+                WinForms.ToolTipIcon.Warning);
         }
 
         private void ResetMinimizeNotify() => _minimizeNotified = false;

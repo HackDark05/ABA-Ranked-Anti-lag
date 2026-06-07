@@ -18,7 +18,6 @@ namespace RegionBlocker
     public class RobloxMonitor : IDisposable
     {
         private System.Timers.Timer? _timer;
-        private bool _triggered;
 
         private const int FAST_INTERVAL_MS = 300;
         private const int SLOW_INTERVAL_MS = 3000;
@@ -62,7 +61,6 @@ namespace RegionBlocker
 
         public void Start()
         {
-            _triggered = false;
             IsRunning  = true;
             _timer     = new System.Timers.Timer(1);
             _timer.Elapsed  += (_, _) => Check();
@@ -73,13 +71,12 @@ namespace RegionBlocker
         public void Stop()
         {
             IsRunning  = false;
-            _triggered = false;
             _timer?.Stop();
             _timer?.Dispose();
             _timer = null;
         }
 
-        public void ResetTrigger() => _triggered = false;
+        public void ResetTrigger() { }
 
         private void ScheduleNext(bool robloxFound)
         {
@@ -119,11 +116,8 @@ namespace RegionBlocker
 
             StatusChanged?.Invoke(status);
 
-            if (black && !_triggered)
-            {
-                _triggered = true;
+            if (black)
                 BlackScreenDetected?.Invoke();
-            }
 
             ScheduleNext(true);
         }
