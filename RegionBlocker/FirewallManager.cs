@@ -1,6 +1,5 @@
 using System.Diagnostics;
-using System.IO;
-using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RegionBlocker
 {
@@ -8,13 +7,17 @@ namespace RegionBlocker
     {
         private const string RuleName = "BlockIP";
 
+        private static readonly Regex EnabledRegex = new(
+            @"Enabled:\s*(Yes|No)", RegexOptions.IgnoreCase);
+
         internal static string GetRuleStatus()
         {
-            string output = RunPS(
-                "Get-NetFirewallRule -DisplayName 'BlockIP' -ErrorAction SilentlyContinue" +
-                " | Select-Object -ExpandProperty Enabled");
-            if (string.IsNullOrWhiteSpace(output)) return "MISSING";
-            return output.Trim().Equals("True", StringComparison.OrdinalIgnoreCase)
+            string output = RunNetsh($"advfirewall firewall show rule name=\"{RuleName}\"");
+            if (string.IsNullOrWhiteSpace(output) || output.Contains("No rules match"))
+                return "MISSING";
+            var match = EnabledRegex.Match(output);
+            if (!match.Success) return "DISABLED";
+            return match.Groups[1].Value.Equals("Yes", StringComparison.OrdinalIgnoreCase)
                 ? "ENABLED" : "DISABLED";
         }
 
@@ -24,77 +27,36 @@ namespace RegionBlocker
             if (list.Count == 0)
                 throw new InvalidOperationException("No IPs configured — press 'Apply to Rule' first.");
 
-            string ipArray = BuildIpArray(list);
-            string script = $@"
-$name = '{RuleName}'
-$rule = Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
-if ($rule) {{
-    Set-NetFirewallRule -DisplayName $name -Enabled True
-}} else {{
-    $ips = {ipArray}
-    New-NetFirewallRule -DisplayName $name -Direction Outbound -Action Block `
-        -RemoteAddress $ips -Profile Any -Enabled True | Out-Null
-}}
-";
-            RunPSFile(script);
+            RunNetsh($"advfirewall firewall delete rule name=\"{RuleName}\"");
+            CreateRule(list, enabled: true);
         }
 
         internal static void DisableBlock(IEnumerable<string> ips)
         {
-            string script = $@"
-$name = '{RuleName}'
-$rule = Get-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
-if ($rule) {{ Set-NetFirewallRule -DisplayName $name -Enabled False }}
-";
-            RunPSFile(script);
+            RunNetsh($"advfirewall firewall set rule name=\"{RuleName}\" new enable=no");
         }
 
         internal static void ApplyIPs(IEnumerable<string> ips)
         {
             var list = ips.ToList();
-            string ipArray = BuildIpArray(list);
-            string script = $@"
-$name = '{RuleName}'
-Remove-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
-if ({(list.Count > 0 ? "1" : "0")}) {{
-    $ips = {ipArray}
-    New-NetFirewallRule -DisplayName $name -Direction Outbound -Action Block `
-        -RemoteAddress $ips -Profile Any -Enabled False | Out-Null
-}}
-";
-            RunPSFile(script);
+            RunNetsh($"advfirewall firewall delete rule name=\"{RuleName}\"");
+            if (list.Count > 0)
+                CreateRule(list, enabled: false);
         }
 
-        private static string BuildIpArray(IEnumerable<string> ips)
+        private static void CreateRule(List<string> ips, bool enabled)
         {
-            var list = ips.ToList();
-            if (list.Count == 0) return "@()";
-            var sb = new StringBuilder("@(");
-            sb.Append(string.Join(",", list.Select(ip => $"'{ip}'")));
-            sb.Append(')');
-            return sb.ToString();
+            string remoteip = string.Join(",", ips);
+            string enabledStr = enabled ? "yes" : "no";
+            RunNetsh($"advfirewall firewall add rule name=\"{RuleName}\" dir=out action=block remoteip=\"{remoteip}\" enable={enabledStr} profile=any");
         }
 
-        private static string RunPSFile(string script)
-        {
-            string tmp = Path.Combine(Path.GetTempPath(), $"rb_{Guid.NewGuid():N}.ps1");
-            try
-            {
-                File.WriteAllText(tmp, script, Encoding.UTF8);
-                return RunPS($"-ExecutionPolicy Bypass -File \"{tmp}\"");
-            }
-            finally
-            {
-                try { File.Delete(tmp); } catch { }
-            }
-        }
-
-        private static string RunPS(string arguments)
+        private static string RunNetsh(string arguments)
         {
             var psi = new ProcessStartInfo
             {
-                FileName               = "powershell.exe",
-                Arguments              = $"-NoProfile -NonInteractive -WindowStyle Hidden {arguments}",
+                FileName               = "netsh.exe",
+                Arguments              = arguments,
                 UseShellExecute        = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError  = true,
@@ -102,10 +64,7 @@ if ({(list.Count > 0 ? "1" : "0")}) {{
             };
             using var proc = Process.Start(psi)!;
             string output = proc.StandardOutput.ReadToEnd();
-            string errors = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
-            if (!string.IsNullOrWhiteSpace(errors) && proc.ExitCode != 0)
-                throw new Exception(errors.Trim());
             return output;
         }
     }

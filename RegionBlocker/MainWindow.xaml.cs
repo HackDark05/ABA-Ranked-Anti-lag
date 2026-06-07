@@ -38,6 +38,8 @@ namespace RegionBlocker
             return $"{addr}/{bits}";
         }
 
+        private bool _alwaysOnTop;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -149,6 +151,25 @@ namespace RegionBlocker
             });
         }
 
+        private void BtnAlwaysOnTop_Click(object sender, RoutedEventArgs e)
+        {
+            _alwaysOnTop = !_alwaysOnTop;
+            Topmost = _alwaysOnTop;
+
+            if (_alwaysOnTop)
+            {
+                btnAlwaysOnTop.Style     = (Style)FindResource("PinBtnActive");
+                btnAlwaysOnTop.Content   = "📌 ALWAYS ON TOP";
+                Log("Always on top: ON");
+            }
+            else
+            {
+                btnAlwaysOnTop.Style     = (Style)FindResource("PinBtn");
+                btnAlwaysOnTop.Content   = "📌 ALWAYS ON TOP";
+                Log("Always on top: OFF");
+            }
+        }
+
         // ── Monitor buttons ───────────────────────────────────────────────────
 
         private void BtnStartMonitor_Click(object sender, RoutedEventArgs e)
@@ -179,11 +200,9 @@ namespace RegionBlocker
 
         private void BtnResetTrigger_Click(object sender, RoutedEventArgs e)
         {
-            // Reset trigger gate
             _monitor.ResetTrigger();
             SetResetTriggerButtonState(active: false);
 
-            // Also disable the firewall rule so the next session can trigger immediately
             try
             {
                 FirewallManager.DisableBlock(_ips);
@@ -198,12 +217,10 @@ namespace RegionBlocker
             }
         }
 
-        // Changes the Reset Trigger button color to indicate whether a trigger is active
         private void SetResetTriggerButtonState(bool active)
         {
             if (active)
             {
-                // Orange/alert: trigger fired, waiting for manual reset
                 btnResetTrigger.Background  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(120, 50, 0));
                 btnResetTrigger.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 100, 0));
                 btnResetTrigger.Foreground  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 160, 40));
@@ -211,7 +228,6 @@ namespace RegionBlocker
             }
             else
             {
-                // Neutral: idle state
                 btnResetTrigger.Background  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 26, 46));
                 btnResetTrigger.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(58, 58, 92));
                 btnResetTrigger.Foreground  = new SolidColorBrush(System.Windows.Media.Color.FromRgb(192, 192, 224));

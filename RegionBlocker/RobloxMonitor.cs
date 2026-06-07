@@ -38,11 +38,11 @@ namespace RegionBlocker
 
         public static List<SamplePoint> DefaultPoints() => new()
         {
-            new SamplePoint { RelX = 0.035, RelY = 0.143, Label = "1" },
-            new SamplePoint { RelX = 0.977, RelY = 0.142, Label = "2" },
-            new SamplePoint { RelX = 0.032, RelY = 0.939, Label = "3" },
-            new SamplePoint { RelX = 0.973, RelY = 0.936, Label = "4" },
-            new SamplePoint { RelX = 0.502, RelY = 0.958, Label = "5" },
+            new SamplePoint { RelX = 0.217, RelY = 0.190, Label = "1" },
+            new SamplePoint { RelX = 0.778, RelY = 0.198, Label = "2" },
+            new SamplePoint { RelX = 0.209, RelY = 0.661, Label = "3" },
+            new SamplePoint { RelX = 0.799, RelY = 0.662, Label = "4" },
+            new SamplePoint { RelX = 0.487, RelY = 0.677, Label = "5" },
         };
 
         public int BlackThreshold { get; set; } = 4;
@@ -64,7 +64,7 @@ namespace RegionBlocker
         {
             _triggered = false;
             IsRunning  = true;
-            _timer     = new System.Timers.Timer(SLOW_INTERVAL_MS);
+            _timer     = new System.Timers.Timer(1);
             _timer.Elapsed  += (_, _) => Check();
             _timer.AutoReset = false;
             _timer.Start();
@@ -128,53 +128,8 @@ namespace RegionBlocker
             ScheduleNext(true);
         }
 
-        // Fast path: read pixels directly from window DC (only works when visible)
         public bool CaptureAndSampleDirect(IntPtr hwnd, MonitorStatus status)
-        {
-            try
-            {
-                if (!GetClientRect(hwnd, out RECT cr)) return false;
-                int w = cr.Right  - cr.Left;
-                int h = cr.Bottom - cr.Top;
-                if (w <= 0 || h <= 0) return false;
-
-                IntPtr hdc = GetDC(hwnd);
-                if (hdc == IntPtr.Zero) return false;
-
-                List<SamplePoint> pts;
-                lock (_pointsLock) pts = new List<SamplePoint>(_samplePoints);
-
-                int blackCount = 0;
-                var colors = new Color[pts.Count];
-
-                for (int i = 0; i < pts.Count; i++)
-                {
-                    var (px, py) = pts[i].ToPixel(w, h);
-                    px = Math.Clamp(px, 0, w - 1);
-                    py = Math.Clamp(py, 0, h - 1);
-
-                    uint raw = GetPixelGdi(hdc, px, py);
-                    byte r = (byte)(raw & 0xFF);
-                    byte g = (byte)((raw >> 8) & 0xFF);
-                    byte b = (byte)((raw >> 16) & 0xFF);
-                    colors[i] = Color.FromArgb(r, g, b);
-
-                    if (r == 0 && g == 0 && b == 0) blackCount++;
-                }
-
-                ReleaseDC(hwnd, hdc);
-
-                status.SampleColors  = colors;
-                status.BlackCount    = blackCount;
-                status.IsBlackScreen = blackCount >= BlackThreshold;
-
-                return status.IsBlackScreen;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+            => CaptureAndSamplePrintWindow(hwnd, status);
 
         // Slow path: PrintWindow for minimized windows, uses LockBits instead of GetPixel
         public bool CaptureAndSamplePrintWindow(IntPtr hwnd, MonitorStatus status)
@@ -244,9 +199,6 @@ namespace RegionBlocker
         [DllImport("user32.dll")] private static extern bool GetClientRect(IntPtr h, out RECT r);
         [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr h);
         [DllImport("user32.dll")] private static extern bool PrintWindow(IntPtr h, IntPtr hdc, uint f);
-        [DllImport("user32.dll")] private static extern IntPtr GetDC(IntPtr hwnd);
-        [DllImport("user32.dll")] private static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
-        [DllImport("gdi32.dll",  EntryPoint = "GetPixel")] private static extern uint GetPixelGdi(IntPtr hdc, int x, int y);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct RECT { public int Left, Top, Right, Bottom; }

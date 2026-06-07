@@ -78,6 +78,22 @@
             <Setter Property="Padding" Value="0"/>
         </Style>
 
+        <Style x:Key="PinBtn" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#1A1A2E"/>
+            <Setter Property="BorderBrush" Value="#3A3A5C"/>
+            <Setter Property="Foreground"  Value="#555577"/>
+            <Setter Property="Padding"     Value="6 0"/>
+            <Setter Property="FontSize"    Value="10"/>
+        </Style>
+
+        <Style x:Key="PinBtnActive" TargetType="Button" BasedOn="{StaticResource BaseBtn}">
+            <Setter Property="Background"  Value="#1A1A3E"/>
+            <Setter Property="BorderBrush" Value="#5555AA"/>
+            <Setter Property="Foreground"  Value="#AAAAFF"/>
+            <Setter Property="Padding"     Value="6 0"/>
+            <Setter Property="FontSize"    Value="10"/>
+        </Style>
+
         <!-- ListBox -->
         <Style x:Key="DarkList" TargetType="ListBox">
             <Setter Property="Background"                              Value="#0C0C16"/>
@@ -156,6 +172,13 @@
                 <TextBlock Text="by Goldskin_Collector" FontSize="9"
                            Foreground="#4A4A7A" FontStyle="Italic" HorizontalAlignment="Right"
                            Margin="0 2 0 0"/>
+                <Button x:Name="btnAlwaysOnTop"
+                        Content="📌 ALWAYS ON TOP"
+                        Style="{StaticResource PinBtn}"
+                        Height="22" Margin="0 5 0 0"
+                        HorizontalAlignment="Right"
+                        Click="BtnAlwaysOnTop_Click"
+                        ToolTip="Toggle always-on-top"/>
             </StackPanel>
         </Grid>
 
