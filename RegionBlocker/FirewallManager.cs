@@ -10,6 +10,29 @@ namespace RegionBlocker
         private static readonly Regex EnabledRegex = new(
             @"Enabled:\s*(Yes|No)", RegexOptions.IgnoreCase);
 
+        internal static List<string> GetRuleIPs()
+        {
+            string output = RunNetsh($"advfirewall firewall show rule name=\"{RuleName}\"");
+            if (string.IsNullOrWhiteSpace(output) || output.Contains("No rules match"))
+                return new List<string>();
+
+            var result = new List<string>();
+            foreach (var line in output.Split('\n'))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("RemoteIP:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var value = trimmed.Substring("RemoteIP:".Length).Trim();
+                foreach (var entry in value.Split(','))
+                {
+                    var ip = entry.Trim();
+                    if (!string.IsNullOrEmpty(ip) && ip != "Any")
+                        result.Add(ip);
+                }
+            }
+            return result;
+        }
+
         internal static string GetRuleStatus()
         {
             string output = RunNetsh($"advfirewall firewall show rule name=\"{RuleName}\"");

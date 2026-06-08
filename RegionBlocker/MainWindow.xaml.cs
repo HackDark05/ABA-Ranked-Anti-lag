@@ -245,9 +245,23 @@ namespace RegionBlocker
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
+            var ruleIPs = FirewallManager.GetRuleIPs();
+            if (ruleIPs.Count > 0)
+            {
+                int synced = 0;
+                foreach (var ip in ruleIPs)
+                {
+                    if (!_ips.Contains(ip)) { _ips.Add(ip); synced++; }
+                }
+                if (synced > 0)
+                {
+                    ConfigManager.SaveIPs(_ips);
+                    RefreshIPList();
+                }
+            }
             RefreshFirewallStatus();
             RefreshLastLog();
-            Log("Refreshed.");
+            Log("Refreshed." + (ruleIPs.Count > 0 ? $" Synced {_ips.Count} IP(s) from rule." : ""));
         }
 
         private void RunFirewallOp(Action op)
@@ -265,20 +279,54 @@ namespace RegionBlocker
         private void BtnAdd_Click(object sender, RoutedEventArgs e) => AddCurrentIP();
         private void TxtNewIP_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key == System.Windows.Input.Key.Enter) AddCurrentIP();
+            if (e.Key == System.Windows.Input.Key.Enter &&
+                (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == 0)
+            {
+                e.Handled = true;
+                AddCurrentIP();
+            }
         }
 
         private void AddCurrentIP()
         {
-            string val = NormalizeCidr(txtNewIP.Text.Trim());
-            if (!CidrRegex.IsMatch(val)) { Log("Invalid format. Use x.x.x.x or x.x.x.x/24 or x.x.x.x/255.255.255.0"); return; }
-            if (_ips.Contains(val)) { Log($"Already in list: {val}"); return; }
-            _ips.Add(val);
-            ConfigManager.SaveIPs(_ips);
-            listIPs.Items.Add(val);
-            UpdateIPCount();
-            txtNewIP.Clear();
-            Log($"Added: {val}");
+            var raw = txtNewIP.Text;
+            var lines = raw.Split(new[] { '\n', '\r', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                           .Select(l => l.Trim())
+                           .Where(l => l.Length > 0)
+                           .ToArray();
+
+            if (lines.Length > 1)
+            {
+                int added = 0;
+                int invalid = 0;
+                foreach (var line in lines)
+                {
+                    var val = NormalizeCidr(line);
+                    if (!CidrRegex.IsMatch(val)) { invalid++; continue; }
+                    if (_ips.Contains(val)) continue;
+                    _ips.Add(val);
+                    added++;
+                }
+                ConfigManager.SaveIPs(_ips);
+                RefreshIPList();
+                txtNewIP.Clear();
+                string msg = $"Added {added} IP(s).";
+                if (invalid > 0) msg += $" Skipped {invalid} invalid.";
+                Log(msg);
+                return;
+            }
+
+            {
+                var val = NormalizeCidr(raw.Trim());
+                if (!CidrRegex.IsMatch(val)) { Log("Invalid format. Use x.x.x.x or x.x.x.x/24 or x.x.x.x/255.255.255.0"); return; }
+                if (_ips.Contains(val)) { Log($"Already in list: {val}"); return; }
+                _ips.Add(val);
+                ConfigManager.SaveIPs(_ips);
+                listIPs.Items.Add(val);
+                UpdateIPCount();
+                txtNewIP.Clear();
+                Log($"Added: {val}");
+            }
         }
 
         private void BtnRemove_Click(object sender, RoutedEventArgs e)

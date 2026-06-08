@@ -323,8 +323,10 @@
                     <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="txtNewIP" Grid.Column="0"
-                         Style="{StaticResource DarkInput}" Height="30"
-                         ToolTip="e.g. 1.2.3.0/24"
+                         Style="{StaticResource DarkInput}" MinHeight="30" MaxHeight="80"
+                         AcceptsReturn="True" TextWrapping="NoWrap"
+                         VerticalScrollBarVisibility="Auto"
+                         ToolTip="Paste one or multiple IPs (one per line)"
                          KeyDown="TxtNewIP_KeyDown"/>
                 <Button Grid.Column="1" Content="+ ADD"
                         Style="{StaticResource GreenBtn}" Height="30" Margin="5 0 0 0"

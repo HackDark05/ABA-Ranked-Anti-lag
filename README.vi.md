@@ -71,8 +71,12 @@ Tool sẽ tự tạo một Windows Firewall rule tên `BlockIP` ở trạng thá
 
 ### 2. Thêm / chỉnh sửa IP (nếu cần)
 
-- Gõ IP hoặc dải CIDR vào ô nhập liệu phía dưới (ví dụ: `128.116.1.0/24`) rồi nhấn **+ ADD**, hoặc
-- Nhấn **^ IMPORT TXT** để nạp file `.txt` với mỗi dòng là một IP/CIDR.
+- **Một IP đơn lẻ** — gõ IP hoặc dải CIDR vào ô nhập liệu (ví dụ: `128.116.1.0/24`) rồi nhấn **+ ADD** hoặc **Enter**.
+- **Nhiều IP cùng lúc** — paste nhiều IP thẳng vào ô nhập liệu (mỗi dòng một IP, hoặc cách nhau bằng dấu chấm phẩy), rồi nhấn **+ ADD** hoặc **Enter**. Tool xử lý toàn bộ cùng lúc: normalize, validate, bỏ qua trùng lặp, và báo số lượng đã thêm / bị bỏ qua.
+
+  > **Mẹo:** Trong ô nhập liệu, **Shift+Enter** xuống dòng mới để bạn gõ thủ công nhiều IP trước khi nhấn ADD.
+
+- **Import từ file** — nhấn **^ IMPORT TXT** để nạp file `.txt` với mỗi dòng là một IP/CIDR.
 
 Sau khi chỉnh sửa, nhấn **>> APPLY TO RULE** lại để cập nhật rule.
 
@@ -116,7 +120,7 @@ Nhấn Start Monitor  →  Queue Ranked  →  Phát hiện màn đen  →  Firew
 
 - **[ON] ENABLE BLOCK** — bật rule ngay lập tức.
 - **[OFF] DISABLE BLOCK** — tắt rule ngay lập tức, monitor tự re-arm.
-- **<< REFRESH** — đọc lại trạng thái rule hiện tại từ Windows.
+- **<< REFRESH** — đọc lại trạng thái rule hiện tại từ Windows và **tự động sync các IP có trong firewall rule nhưng chưa có trong danh sách của app** vào list.
 
 ---
 
@@ -202,9 +206,15 @@ Xuất IP ra .txt  →  Chỉnh sửa file (thêm/xoá IP)  →  Import TXT vào
 
 ### Quản lý danh sách IP
 - Thêm / xoá từng mục
+- **Paste nhiều IP cùng lúc** — paste thẳng vào ô nhập liệu (phân cách bằng xuống dòng hoặc dấu chấm phẩy); mỗi entry được validate, normalize và dedup tự động
 - Import từ `.txt` (mỗi dòng một IP hoặc CIDR)
 - Export danh sách hiện tại ra `.txt`
 - Danh sách tự lưu mỗi khi thay đổi, tự nạp lại khi khởi động
+
+### Refresh & sync
+- **<< REFRESH** đọc lại trạng thái rule firewall trực tiếp từ Windows
+- Tự động merge các IP có trong rule `BlockIP` nhưng chưa có trong danh sách của app — hữu ích khi bạn chỉnh sửa rule bên ngoài hoặc restore từ backup
+- IP được sync sẽ được lưu xuống disk ngay lập tức
 
 ### Tự động re-arm
 - Trigger bắn mỗi khi phát hiện màn đen **và** rule đang DISABLED
@@ -275,6 +285,12 @@ A: Các detect point có thể đang rơi vào vùng tối trong game (ví dụ:
 
 **Q: App crash khi khởi động.**  
 A: Cài [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) rồi thử lại.
+
+**Q: Paste nhiều IP nhưng có một số bị bỏ qua.**  
+A: Log bar ở dưới cùng sẽ báo số entry đã thêm và số bị bỏ qua do không hợp lệ. Đảm bảo mỗi dòng là một IP hợp lệ (`x.x.x.x`) hoặc dải CIDR (`x.x.x.x/24` hoặc `x.x.x.x/255.255.255.0`). Dòng trống và trùng lặp được bỏ qua không báo lỗi.
+
+**Q: Nhấn REFRESH tự nhiên thêm IP lạ vào danh sách.**  
+A: Đây là tính năng sync — REFRESH đọc rule `BlockIP` đang có trong Windows Firewall và merge các IP có trong rule nhưng chưa có trong list của app. Điều này xảy ra nếu bạn từng apply rule với nhiều IP hơn hoặc chỉnh sửa rule bên ngoài. Bạn có thể xoá các entry không muốn rồi nhấn **>> APPLY TO RULE** để ghi đè lại rule.
 
 **Q: Thêm app vào Windows startup?**  
 A: Tạo shortcut đến `RegionBlocker.exe` và đặt vào:

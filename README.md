@@ -71,8 +71,12 @@ The tool creates a Windows Firewall rule named `BlockIP` in a **disabled** state
 
 ### 2. Add / edit IPs (optional)
 
-- Type an IP or CIDR range in the input box (e.g. `128.116.1.0/24`) and click **+ ADD**, or
-- Click **^ IMPORT TXT** to load a `.txt` file with one IP/CIDR per line.
+- **Single entry** — type one IP or CIDR range in the input box (e.g. `128.116.1.0/24`) and click **+ ADD** or press **Enter**.
+- **Multiple entries** — paste several IPs at once (one per line, separated by newlines or semicolons) directly into the input box, then click **+ ADD** or press **Enter**. The tool processes all lines at once, normalizes each entry, skips duplicates, and reports how many were added and how many were skipped as invalid.
+
+  > **Tip:** Inside the input box, **Shift+Enter** inserts a new line so you can type entries manually before adding them all at once.
+
+- **Import from file** — click **^ IMPORT TXT** to load a `.txt` file with one IP/CIDR per line.
 
 After editing, click **>> APPLY TO RULE** again to update the rule.
 
@@ -117,7 +121,7 @@ Start Monitor  →  Queue for Ranked  →  Black screen detected  →  Firewall 
 
 - **[ON] ENABLE BLOCK** — enables the rule immediately.
 - **[OFF] DISABLE BLOCK** — disables the rule immediately and re-arms the monitor.
-- **<< REFRESH** — re-reads the current rule status from Windows.
+- **<< REFRESH** — reads the current rule status from Windows **and syncs any IPs that are in the firewall rule but missing from the app's list** back into the list automatically.
 
 ---
 
@@ -203,9 +207,15 @@ Export IPs to .txt  →  Edit file (add / remove IPs)  →  Import TXT into app
 
 ### IP list manager
 - Add / remove individual entries
+- **Multi-IP paste** — paste multiple IPs at once into the input box (newline or semicolon separated); each entry is validated, normalized, and deduplicated automatically
 - Import from `.txt` (one IP or CIDR per line)
 - Export current list to `.txt`
 - List auto-saved on every change, reloaded on launch
+
+### Refresh & sync
+- **<< REFRESH** re-reads the live firewall rule state from Windows
+- Automatically merges any IPs found in the `BlockIP` rule that are not yet in the app's list — useful if you edited the rule externally or restored it from backup
+- Synced IPs are saved to disk immediately
 
 ### Auto re-arm trigger
 - Trigger fires whenever a black screen is detected **and** the firewall rule is currently disabled
@@ -276,6 +286,12 @@ A: The detect points may be landing on areas that turn black mid-game (e.g. dark
 
 **Q: The app crashes on launch.**  
 A: Install the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) and try again.
+
+**Q: I pasted multiple IPs but some were skipped.**  
+A: The log bar at the bottom will show how many entries were added and how many were skipped as invalid. Make sure each line contains a valid IP (`x.x.x.x`) or CIDR range (`x.x.x.x/24` or `x.x.x.x/255.255.255.0`). Blank lines and duplicates are ignored silently.
+
+**Q: REFRESH added IPs I didn't put in the list.**  
+A: This is the sync feature — REFRESH reads the live `BlockIP` firewall rule and merges any IPs that are in the rule but missing from the app's list. This can happen if you previously applied a rule with more IPs or edited the rule externally. You can remove unwanted entries from the list and click **>> APPLY TO RULE** to overwrite the rule.
 
 **Q: Can I add this to Windows startup?**  
 A: Create a shortcut to `RegionBlocker.exe` and place it in:
