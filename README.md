@@ -56,29 +56,27 @@ Once the firewall rule is active, the monitor will not re-trigger until you **di
 ![Region Blocker main UI](img/MainUI.jpg)
 
 ### Default IP list — blocks everything except Singapore & Hong Kong
-
 The tool ships with a built-in IP list covering EU, JP, and other high-latency server ranges. **This list blocks all regions except Singapore and Hong Kong**, so you only connect to the nearest servers right away.
 
 When you open the app for the first time, the IP list is already populated in the **IP / CIDR BLOCK LIST** panel. All you need to do is:
 
 ### 1. Apply the IP list to the firewall rule
-
 Click **>> APPLY TO RULE**.
-
 The tool creates a Windows Firewall rule named `BlockIP` in a **disabled** state. The monitor will enable it automatically when a black screen is detected.
 
 > You only need to do this **once**, or whenever you change the IP list.
 
 ### 2. Add / edit IPs (optional)
-
 - **Single entry** — type one IP or CIDR range in the input box (e.g. `128.116.1.0/24`) and click **+ ADD** or press **Enter**.
 - **Multiple entries** — paste several IPs at once (one per line, separated by newlines or semicolons) directly into the input box, then click **+ ADD** or press **Enter**. The tool processes all lines at once, normalizes each entry, skips duplicates, and reports how many were added and how many were skipped as invalid.
-
   > **Tip:** Inside the input box, **Shift+Enter** inserts a new line so you can type entries manually before adding them all at once.
-
 - **Import from file** — click **^ IMPORT TXT** to load a `.txt` file with one IP/CIDR per line.
 
 After editing, click **>> APPLY TO RULE** again to update the rule.
+
+> **Need IPs for other regions?**
+> You can find the full list of Roblox server IP ranges with their locations on the [Roblox Developer Forum](https://devforum.roblox.com/t/roblox-server-region-a-list-of-roblox-ip-ranges-and-its-location-so-you-dont-need-to-use-outdatedbrokenexpensive-apis/3094401).
+> If you want to block additional regions (e.g. EU, JP, US), simply copy the CIDR ranges for those regions from that list and add them to the tool using the steps above.
 
 ### 3. Configure detect points (optional)
 
